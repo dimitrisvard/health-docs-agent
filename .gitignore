@@ -15,6 +15,8 @@ __pycache__/
 node_modules/
 .next/
 dist/
+*.tsbuildinfo
+next-env.d.ts
 
 # data: commit only a small curated set; keep raw PDFs out
 data/*.pdf

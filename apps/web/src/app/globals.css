@@ -1,0 +1,82 @@
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+@layer base {
+  :root {
+    --background: 210 20% 99%;
+    --foreground: 222 22% 12%;
+    --card: 0 0% 100%;
+    --card-foreground: 222 22% 12%;
+    --muted: 210 20% 96%;
+    --muted-foreground: 215 14% 42%;
+    --border: 214 20% 90%;
+    --input: 214 20% 88%;
+    --ring: 174 72% 34%;
+
+    /* calm medical teal — the one confident accent */
+    --primary: 174 72% 32%;
+    --primary-foreground: 0 0% 100%;
+    --accent: 174 48% 95%;
+    --accent-foreground: 174 80% 22%;
+
+    --destructive: 0 72% 48%;
+    --destructive-foreground: 0 0% 100%;
+
+    /* distinct, muted source-kind hues */
+    --kind-trial: 205 70% 44%;
+    --kind-drug: 28 78% 46%;
+    --kind-guideline: 262 48% 56%;
+
+    --radius: 0.75rem;
+  }
+
+  .dark {
+    --background: 222 28% 7%;
+    --foreground: 210 20% 92%;
+    --card: 222 25% 9%;
+    --card-foreground: 210 20% 92%;
+    --muted: 217 20% 15%;
+    --muted-foreground: 215 16% 60%;
+    --border: 217 19% 18%;
+    --input: 217 19% 20%;
+    --ring: 174 64% 46%;
+
+    --primary: 174 64% 44%;
+    --primary-foreground: 222 28% 7%;
+    --accent: 174 42% 16%;
+    --accent-foreground: 174 60% 72%;
+
+    --destructive: 0 62% 46%;
+    --destructive-foreground: 0 0% 100%;
+
+    --kind-trial: 205 72% 62%;
+    --kind-drug: 28 84% 62%;
+    --kind-guideline: 262 56% 72%;
+  }
+
+  * {
+    border-color: hsl(var(--border));
+  }
+
+  body {
+    background-color: hsl(var(--background));
+    color: hsl(var(--foreground));
+    font-family:
+      ui-sans-serif, system-ui, -apple-system, "Segoe UI", Roboto, Helvetica,
+      Arial, "Apple Color Emoji", "Segoe UI Emoji";
+    -webkit-font-smoothing: antialiased;
+    text-rendering: optimizeLegibility;
+  }
+
+  ::selection {
+    background-color: hsl(var(--primary) / 0.18);
+  }
+}
+
+@layer utilities {
+  .scrollbar-thin {
+    scrollbar-width: thin;
+    scrollbar-color: hsl(var(--border)) transparent;
+  }
+}

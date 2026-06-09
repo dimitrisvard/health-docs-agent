@@ -5,6 +5,7 @@ from ingest.seed import (
     ensure_schema,
     infer_kind,
     ingest_file,
+    ingest_text,
     load_text,
     title_from,
 )
@@ -107,3 +108,25 @@ def test_ensure_schema_executes_committed_ddl():
     executed = " ".join(sql for sql, _ in conn.store["execute"])
     assert "CREATE TABLE" in executed
     assert "chunks" in executed
+
+
+def test_ingest_text_returns_document_id_and_chunk_count():
+    conn = FakeConn()
+
+    def fake_embed(texts: list[str]) -> list[list[float]]:
+        return [[0.0] * 768 for _ in texts]
+
+    doc_id, n = ingest_text(
+        conn,
+        "Aspirin SmPC",
+        "drug_label",
+        "## Contraindications\nPregnancy.\n\n## Posology\nOne daily.\n",
+        embed=fake_embed,
+    )
+
+    assert doc_id == 42
+    assert n >= 2
+    execs = conn.store["execute"]
+    assert any(sql.startswith("DELETE FROM documents") for sql, _ in execs)
+    inserts = [(sql, p) for sql, p in execs if sql.startswith("INSERT INTO documents")]
+    assert inserts[0][1][:2] == ("drug_label", "Aspirin SmPC")

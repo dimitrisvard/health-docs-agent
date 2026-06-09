@@ -56,5 +56,30 @@ def list_sources() -> list[dict]:
     return _list_sources()
 
 
+@mcp.tool
+def ingest_document(
+    filename: Annotated[str, Field(description="Original file name; kind + title are derived from it")],
+    text: Annotated[str, Field(description="Already-extracted document text to chunk, embed, and store")],
+) -> dict:
+    """Chunk, embed, and store a document (idempotent by title). Returns {document_id, title, kind, chunks}.
+
+    Ingestion lives here, not in the agent. Not in the agent's allowed_tools — the LLM
+    cannot ingest; only the upload endpoint calls this directly over the MCP client.
+    """
+    import os
+
+    import psycopg
+    from pgvector.psycopg import register_vector
+
+    from ingest.seed import ensure_schema, infer_kind, ingest_text, title_from
+
+    title, kind = title_from(filename), infer_kind(filename)
+    with psycopg.connect(os.environ["DATABASE_URL"]) as conn:
+        register_vector(conn)
+        ensure_schema(conn)
+        document_id, chunks = ingest_text(conn, title, kind, text)
+    return {"document_id": document_id, "title": title, "kind": kind, "chunks": chunks}
+
+
 if __name__ == "__main__":
     mcp.run(transport="http", host="0.0.0.0", port=8000)

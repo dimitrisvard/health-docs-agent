@@ -67,20 +67,20 @@ def _vector_literal(vec: list[float]) -> str:
     return "[" + ",".join(repr(float(x)) for x in vec) + "]"
 
 
-def ingest_file(conn: Any, path: Path, embed: Embedder | None = None) -> int:
+def ingest_text(
+    conn: Any, title: str, kind: str, text: str, embed: Embedder | None = None
+) -> tuple[int, int]:
     """Replace any same-titled document, then insert its chunks + embeddings.
 
-    Returns the number of chunks written. `embed` is injectable for testing.
+    Returns (document_id, n_chunks). `embed` is injectable for testing. This is the
+    shared core used by both the seed CLI and the MCP ingest_document tool.
     """
     if embed is None:
         from ingest.embedder import embed_passages  # lazy: avoids loading the model at import
 
         embed = embed_passages
 
-    text = load_text(path)
     chunks = chunk_document(text)
-    title = title_from(path.name)
-    kind = infer_kind(path.name)
 
     with conn.cursor() as cur:
         cur.execute("DELETE FROM documents WHERE title = %s", (title,))
@@ -101,7 +101,13 @@ def ingest_file(conn: Any, path: Path, embed: Embedder | None = None) -> int:
             )
     conn.commit()
     log.info("ingested", title=title, kind=kind, chunks=len(chunks))
-    return len(chunks)
+    return document_id, len(chunks)
+
+
+def ingest_file(conn: Any, path: Path, embed: Embedder | None = None) -> int:
+    """Ingest a corpus file: derive title/kind from the name, then store it."""
+    _, n = ingest_text(conn, title_from(path.name), infer_kind(path.name), load_text(path), embed=embed)
+    return n
 
 
 def ensure_schema(conn: Any) -> None:

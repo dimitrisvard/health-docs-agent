@@ -38,6 +38,41 @@ async def retrieve(question: str, k: int = TOP_K, kind: str | None = None) -> li
     return list(data) if data else []
 
 
+async def list_sources() -> list[dict]:
+    """List ingested documents via the MCP server's list_sources tool."""
+    from fastmcp import Client
+
+    async with Client(MCP_URL) as client:
+        result = await client.call_tool("list_sources", {})
+    data = result.data
+    return list(data) if data else []
+
+
+def _extract_text(filename: str, raw: bytes) -> str:
+    """Extract plain text from an upload. Chunking/embedding/storage happen in MCP."""
+    suffix = filename.lower().rsplit(".", 1)[-1] if "." in filename else ""
+    if suffix in ("txt", "md", "markdown"):
+        return raw.decode("utf-8", errors="replace")
+    if suffix == "pdf":
+        from io import BytesIO
+
+        from pypdf import PdfReader
+
+        reader = PdfReader(BytesIO(raw))
+        return "\n".join(page.extract_text() or "" for page in reader.pages)
+    raise ValueError(f"Unsupported file type: {filename}")
+
+
+async def ingest_upload(filename: str, raw: bytes) -> dict:
+    """Extract text from an upload and hand it to the MCP ingest_document tool."""
+    from fastmcp import Client
+
+    text = _extract_text(filename, raw)
+    async with Client(MCP_URL) as client:
+        result = await client.call_tool("ingest_document", {"filename": filename, "text": text})
+    return dict(result.data)
+
+
 def _format_context(chunks: list[dict]) -> str:
     blocks = [
         f"[chunk {c['id']}] {c.get('title', '')} — {c.get('section', '')}\n{c['text']}".strip()
@@ -81,10 +116,12 @@ def _sse(data: str, event: str | None = None) -> str:
     return f"{prefix}data: {data}\n\n"
 
 
-async def answer_stream(question: str, session_id: str | None = None) -> AsyncIterator[str]:
+async def answer_stream(
+    question: str, session_id: str | None = None, kind: str | None = None
+) -> AsyncIterator[str]:
     """Yield SSE frames: a `sources` event, then `token` events, then `done`."""
     started = time.monotonic()
-    chunks = await retrieve(question)
+    chunks = await retrieve(question, kind=kind)
     yield _sse(json.dumps(_citations(chunks)), event="sources")
 
     if not is_supported(chunks):

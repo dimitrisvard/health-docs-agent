@@ -4,6 +4,8 @@ claude-agent-sdk
 anthropic
 fastmcp
 httpx
+pypdf
+python-multipart
 pydantic>=2
 structlog
 opentelemetry-sdk
