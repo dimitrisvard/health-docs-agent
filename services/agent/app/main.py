@@ -4,7 +4,7 @@ from fastapi import FastAPI
 from fastapi.responses import StreamingResponse
 from pydantic import BaseModel
 
-from app.agent.loop import answer_stream
+from app.agent.rag import answer_stream
 from app.obs.logging import configure_logging
 
 configure_logging()

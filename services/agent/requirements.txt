@@ -1,6 +1,8 @@
 fastapi
 uvicorn[standard]
 claude-agent-sdk
+anthropic
+fastmcp
 httpx
 pydantic>=2
 structlog
