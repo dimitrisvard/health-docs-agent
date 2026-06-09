@@ -1,5 +1,5 @@
 import { parseSseChunk } from "@/lib/sse";
-import type { Citation, IngestResult, Source } from "@/lib/types";
+import type { Citation, EvalReport, IngestResult, Source } from "@/lib/types";
 
 export const AGENT_URL =
   process.env.NEXT_PUBLIC_AGENT_URL?.replace(/\/+$/, "") ?? "http://localhost:8080";
@@ -16,6 +16,12 @@ export async function ingestDocument(file: File): Promise<IngestResult> {
   const res = await fetch(`${AGENT_URL}/ingest`, { method: "POST", body: form });
   if (!res.ok) throw new Error(`Upload failed (${res.status})`);
   return (await res.json()) as IngestResult;
+}
+
+export async function fetchEvals(): Promise<EvalReport | null> {
+  const res = await fetch(`${AGENT_URL}/evals`, { cache: "no-store" });
+  if (!res.ok) throw new Error(`Could not load evals (${res.status})`);
+  return (await res.json()) as EvalReport | null;
 }
 
 export interface QueryHandlers {

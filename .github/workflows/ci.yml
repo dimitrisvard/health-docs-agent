@@ -39,10 +39,14 @@ jobs:
           (cd services/agent && PYTHONPATH=. pytest -q)
           (cd services/mcp && PYTHONPATH=. pytest -q)
           PYTHONPATH=. pytest evals -q
-      # - name: Evals (judged)   # enable in Phase 5; needs the ANTHROPIC_API_KEY repo secret
-      #   env:
-      #     ANTHROPIC_API_KEY: ${{ secrets.ANTHROPIC_API_KEY }}
-      #   run: python -m evals.run
+      - name: Evals (retrieval + faithfulness gate)
+        # Resilient: run.py skips cleanly when the live MCP/DB/LLM stack or a labelled
+        # corpus isn't present, and exits non-zero when a measured metric is below its
+        # threshold. Add the ANTHROPIC_API_KEY repo secret + seed a fixture to gate fully.
+        env:
+          ANTHROPIC_API_KEY: ${{ secrets.ANTHROPIC_API_KEY }}
+          PYTHONPATH: ${{ github.workspace }}:${{ github.workspace }}/services/agent
+        run: python -m evals.run
 
   web:
     runs-on: ubuntu-latest

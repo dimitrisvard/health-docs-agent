@@ -7,6 +7,7 @@ from pydantic import BaseModel
 from app.agent.loop import answer_stream
 from app.agent.rag import ingest_upload, list_sources
 from app.obs.logging import configure_logging
+from app.reports import latest_eval
 
 configure_logging()
 app = FastAPI(title="health-docs-agent")
@@ -20,6 +21,11 @@ def health() -> dict:
 @app.get("/sources")
 async def sources() -> list[dict]:
     return await list_sources()
+
+
+@app.get("/evals")
+def evals() -> dict | None:
+    return latest_eval()
 
 
 class Query(BaseModel):
