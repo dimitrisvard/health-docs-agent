@@ -22,9 +22,11 @@ def _conn():
 def _dense_ids(cur, qvec, kind, document_id) -> list[str]:
     clauses, params = [], []
     if kind:
-        clauses.append("d.kind = %s"); params.append(kind)
+        clauses.append("d.kind = %s")
+        params.append(kind)
     if document_id:
-        clauses.append("c.document_id = %s"); params.append(document_id)
+        clauses.append("c.document_id = %s")
+        params.append(document_id)
     where = (" WHERE " + " AND ".join(clauses)) if clauses else ""
     cur.execute(
         f"SELECT c.id FROM chunks c JOIN documents d ON d.id = c.document_id"
@@ -38,9 +40,11 @@ def _lexical_ids(cur, query, kind, document_id) -> list[str]:
     clauses = ["c.ts @@ websearch_to_tsquery('english', %s)"]
     params: list = [query]
     if kind:
-        clauses.append("d.kind = %s"); params.append(kind)
+        clauses.append("d.kind = %s")
+        params.append(kind)
     if document_id:
-        clauses.append("c.document_id = %s"); params.append(document_id)
+        clauses.append("c.document_id = %s")
+        params.append(document_id)
     where = " WHERE " + " AND ".join(clauses)
     cur.execute(
         f"SELECT c.id FROM chunks c JOIN documents d ON d.id = c.document_id{where} "
