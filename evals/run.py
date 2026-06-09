@@ -156,15 +156,19 @@ def _default_components() -> tuple[Retriever, Answerer | None, Judge | None]:
     from app.agent.rag import stream_completion
 
     has_key = bool(os.environ.get("ANTHROPIC_API_KEY"))
+    # One persistent loop for the whole run: repeated asyncio.run() closes the loop between
+    # calls and races the async HTTP/MCP client teardown ("Event loop is closed").
+    loop = asyncio.new_event_loop()
+    asyncio.set_event_loop(loop)
 
     def retrieve(question: str) -> list[dict]:
-        return asyncio.run(_retrieve(question))
+        return loop.run_until_complete(_retrieve(question))
 
     def answer(question: str, chunks: list[dict]) -> str:
         async def go() -> str:
             return "".join([token async for token in stream_completion(question, chunks)])
 
-        return asyncio.run(go())
+        return loop.run_until_complete(go())
 
     return retrieve, (answer if has_key else None), (_llm_judge if has_key else None)
 

@@ -5,6 +5,7 @@ from uuid import uuid4
 
 import structlog
 from fastapi import FastAPI, HTTPException, Request, Response, UploadFile
+from fastapi.middleware.cors import CORSMiddleware
 from fastapi.responses import StreamingResponse
 from pydantic import BaseModel
 
@@ -17,6 +18,14 @@ from app.reports import latest_eval
 configure_logging()
 app = FastAPI(title="health-docs-agent")
 configure_tracing(app)
+
+# Allow the web UI (e.g. http://localhost:3000) to call this API cross-origin.
+app.add_middleware(
+    CORSMiddleware,
+    allow_origins=["*"],
+    allow_methods=["*"],
+    allow_headers=["*"],
+)
 
 
 @app.middleware("http")

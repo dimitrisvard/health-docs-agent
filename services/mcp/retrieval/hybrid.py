@@ -13,6 +13,11 @@ DB = os.environ["DATABASE_URL"]
 POOL = 20  # candidates per arm before fusion
 
 
+def _vec_literal(vec) -> str:
+    """pgvector text literal so the query embedding binds as `vector`, not float8[]."""
+    return "[" + ",".join(repr(float(x)) for x in vec) + "]"
+
+
 def _conn():
     conn = psycopg.connect(DB, autocommit=True)
     register_vector(conn)
@@ -30,8 +35,8 @@ def _dense_ids(cur, qvec, kind, document_id) -> list[str]:
     where = (" WHERE " + " AND ".join(clauses)) if clauses else ""
     cur.execute(
         f"SELECT c.id FROM chunks c JOIN documents d ON d.id = c.document_id"
-        f"{where} ORDER BY c.embedding <=> %s LIMIT %s",
-        (*params, qvec, POOL),
+        f"{where} ORDER BY c.embedding <=> %s::vector LIMIT %s",
+        (*params, _vec_literal(qvec), POOL),
     )
     return [str(r[0]) for r in cur.fetchall()]
 
