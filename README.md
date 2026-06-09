@@ -16,7 +16,47 @@ make eval                   # run the eval harness
 ```
 
 ## Architecture
-<!-- TODO: paste the Mermaid diagram from PLAN.md / ARCHITECTURE.md + 4-5 sentences -->
+See [ARCHITECTURE.md](ARCHITECTURE.md) for the full diagrams (system + query path) and component flow.
+
+```mermaid
+flowchart TB
+    subgraph Client["Browser"]
+        UI["Next.js 15 UI<br/>chat • citations • retrieval inspector • eval dashboard"]
+    end
+    subgraph AgentSvc["Agent service (FastAPI, Docker)"]
+        LOOP["Agent loop<br/>Claude Agent SDK — multi-step tool calling"]
+        GRD["Guardrails<br/>grounded-only • not-medical-advice • injection defense"]
+    end
+    subgraph MCPSvc["Retrieval MCP server (FastMCP, Docker)"]
+        T1["tool: hybrid_search"]
+        T2["tool: fetch_section"]
+        T3["tool: compare_documents"]
+        T4["tool: list_sources"]
+    end
+    subgraph Data["Data layer (Docker)"]
+        PG[("Postgres<br/>pgvector (dense) + full-text (lexical)<br/>docs • chunks • logs • eval runs")]
+        EMB["FastEmbed<br/>bge-base-en-v1.5 (768d)"]
+    end
+    subgraph Edge["Cloudflare"]
+        AIG["AI Gateway<br/>logs • cost • cache • spend limits"]
+    end
+    LLM["Anthropic — Claude Sonnet"]
+    CC["Claude Code / Desktop<br/>reuses the SAME MCP server"]
+
+    UI -->|query SSE| LOOP
+    LOOP -->|tool calls| T1 & T2 & T3 & T4
+    T1 --> EMB
+    EMB --> PG
+    T1 --> PG
+    T2 --> PG
+    T3 --> PG
+    LOOP --> GRD
+    LOOP -->|messages via ANTHROPIC_BASE_URL| AIG
+    AIG --> LLM
+    CC -.reuses.-> MCPSvc
+```
+<!-- YOUR WORDS HERE: a few sentences framing the diagram (agent-vs-RAG, the reusable MCP server, hybrid retrieval). -->
+
 
 ## RAG / agent approach & decisions
 <!-- YOUR WORDS HERE - chunking, embeddings, hybrid retrieval (BM25 + dense + RRF), the agent loop,
