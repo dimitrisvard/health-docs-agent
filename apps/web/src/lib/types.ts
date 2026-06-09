@@ -25,6 +25,7 @@ export interface ChatMessage {
   role: ChatRole;
   content: string;
   citations?: Citation[];
+  tools?: string[];
   status?: MessageStatus;
 }
 

@@ -22,7 +22,7 @@ export function useChat() {
       setMessages((prev) => [
         ...prev,
         { id: nextId(), role: "user", content: q },
-        { id: assistantId, role: "assistant", content: "", citations: [], status: "streaming" },
+        { id: assistantId, role: "assistant", content: "", citations: [], tools: [], status: "streaming" },
       ]);
       setIsStreaming(true);
 
@@ -34,6 +34,7 @@ export function useChat() {
       try {
         let content = "";
         let citations: Citation[] = [];
+        let tools: string[] = [];
         await streamAnswer(
           q,
           { signal: controller.signal, kind: opts?.kind ?? null },
@@ -46,9 +47,13 @@ export function useChat() {
               content += t;
               patch({ content });
             },
+            onTool: (name) => {
+              tools = [...tools, name];
+              patch({ tools });
+            },
           },
         );
-        patch({ content, citations, status: "done" });
+        patch({ content, citations, tools, status: "done" });
       } catch (err) {
         if ((err as Error).name !== "AbortError") {
           patch({

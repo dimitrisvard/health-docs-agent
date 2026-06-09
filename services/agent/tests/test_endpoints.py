@@ -69,3 +69,9 @@ def test_evals_endpoint_handles_no_run(monkeypatch):
     r = TestClient(app).get("/evals")
     assert r.status_code == 200
     assert r.json() is None
+
+
+def test_response_carries_trace_id_header():
+    r = TestClient(app).get("/health")
+    assert r.status_code == 200
+    assert r.headers.get("x-trace-id")

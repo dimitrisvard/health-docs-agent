@@ -27,6 +27,7 @@ export async function fetchEvals(): Promise<EvalReport | null> {
 export interface QueryHandlers {
   onSources?: (sources: Citation[]) => void;
   onToken?: (text: string) => void;
+  onTool?: (name: string) => void;
 }
 
 /**
@@ -61,6 +62,8 @@ export async function streamAnswer(
         handlers.onSources?.(JSON.parse(ev.data) as Citation[]);
       } else if (ev.event === "token") {
         handlers.onToken?.((JSON.parse(ev.data) as { text: string }).text);
+      } else if (ev.event === "tool") {
+        handlers.onTool?.((JSON.parse(ev.data) as { name: string }).name);
       } else if (ev.event === "done") {
         return;
       }

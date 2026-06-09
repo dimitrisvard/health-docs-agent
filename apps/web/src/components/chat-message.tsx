@@ -24,6 +24,7 @@ export function ChatMessage({ message }: { message: Msg }) {
   const streaming = message.status === "streaming";
   const showDots = streaming && message.content === "";
   const hasCitations = (message.citations?.length ?? 0) > 0;
+  const hasTools = (message.tools?.length ?? 0) > 0;
 
   const copy = async () => {
     try {
@@ -61,10 +62,10 @@ export function ChatMessage({ message }: { message: Msg }) {
           </p>
         )}
 
-        {hasCitations && (
+        {(hasCitations || hasTools) && (
           <>
-            <CitationChips citations={message.citations!} className="mt-3" />
-            <RetrievalInspector citations={message.citations!} />
+            {hasCitations && <CitationChips citations={message.citations!} className="mt-3" />}
+            <RetrievalInspector citations={message.citations ?? []} tools={message.tools} />
           </>
         )}
       </div>

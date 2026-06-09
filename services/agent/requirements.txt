@@ -10,4 +10,5 @@ pydantic>=2
 structlog
 opentelemetry-sdk
 opentelemetry-instrumentation-fastapi
+opentelemetry-exporter-otlp-proto-http
 psycopg[binary]>=3.1
