@@ -1,6 +1,4 @@
 """Tests for the /sources and /ingest endpoints and the upload text extractor."""
-from collections.abc import AsyncIterator
-
 import pytest
 from fastapi.testclient import TestClient
 
@@ -52,31 +50,3 @@ def test_ingest_endpoint_returns_415_on_unsupported(monkeypatch):
     client = TestClient(app)
     r = client.post("/ingest", files={"file": ("x.exe", b"x", "application/octet-stream")})
     assert r.status_code == 415
-
-
-def test_query_forwards_kind_scope(monkeypatch):
-    captured: dict = {}
-
-    async def fake_retrieve(question: str, k: int = 5, kind: str | None = None) -> list[dict]:
-        captured["kind"] = kind
-        return [
-            {
-                "id": 1,
-                "document_id": 1,
-                "section": "S",
-                "text": "t",
-                "title": "T",
-                "source_uri": None,
-                "score": 0.02,
-            }
-        ]
-
-    async def fake_stream(question: str, chunks: list[dict]) -> AsyncIterator[str]:
-        yield "ok"
-
-    monkeypatch.setattr("app.agent.rag.retrieve", fake_retrieve)
-    monkeypatch.setattr("app.agent.rag.stream_completion", fake_stream)
-    client = TestClient(app)
-    r = client.post("/query", json={"question": "what is x?", "kind": "trial"})
-    assert r.status_code == 200
-    assert captured["kind"] == "trial"

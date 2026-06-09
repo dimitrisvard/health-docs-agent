@@ -23,7 +23,7 @@ from app.guardrails import INSUFFICIENT_CONTEXT, is_supported
 log = structlog.get_logger()
 
 MCP_URL = os.environ.get("MCP_URL", "http://mcp:8000/mcp")
-MODEL = os.environ.get("ANTHROPIC_MODEL", "claude-sonnet-4-5")
+MODEL = os.environ.get("ANTHROPIC_MODEL", "claude-sonnet-4-6")
 TOP_K = int(os.environ.get("RETRIEVAL_K", "5"))
 MAX_TOKENS = int(os.environ.get("ANSWER_MAX_TOKENS", "1024"))
 
