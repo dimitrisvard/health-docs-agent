@@ -1,0 +1,6 @@
+fastmcp>=2.0
+fastembed
+psycopg[binary]>=3.1
+pgvector
+pydantic>=2
+structlog

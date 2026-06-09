@@ -1,0 +1,25 @@
+# env / secrets
+.env
+*.key
+*.pem
+
+# python
+__pycache__/
+*.pyc
+.venv/
+.mypy_cache/
+.pytest_cache/
+.ruff_cache/
+
+# node
+node_modules/
+.next/
+dist/
+
+# data: commit only a small curated set; keep raw PDFs out
+data/*.pdf
+data/*.txt
+!data/README.md
+
+# os
+.DS_Store

@@ -1,0 +1,55 @@
+services:
+  db:
+    image: pgvector/pgvector:pg16
+    environment:
+      POSTGRES_PASSWORD: postgres
+      POSTGRES_DB: app
+    ports: ["5432:5432"]
+    volumes:
+      - dbdata:/var/lib/postgresql/data
+      - ./services/mcp/db/schema.sql:/docker-entrypoint-initdb.d/schema.sql:ro
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U postgres"]
+      interval: 5s
+      timeout: 3s
+      retries: 10
+
+  mcp:
+    build: ./services/mcp
+    env_file: .env
+    environment:
+      DATABASE_URL: postgresql://postgres:postgres@db:5432/app
+    ports: ["8000:8000"]
+    volumes:
+      - ./services/mcp:/app
+      - ./data:/app/data
+    depends_on:
+      db:
+        condition: service_healthy
+
+  agent:
+    build: ./services/agent
+    env_file: .env
+    environment:
+      DATABASE_URL: postgresql://postgres:postgres@db:5432/app
+      MCP_URL: http://mcp:8000/mcp
+    ports: ["8080:8080"]
+    volumes:
+      - ./services/agent:/app
+      - ./evals:/app/evals
+    depends_on:
+      - mcp
+
+  web:
+    build: ./apps/web
+    environment:
+      NEXT_PUBLIC_AGENT_URL: http://localhost:8080
+    ports: ["3000:3000"]
+    volumes:
+      - ./apps/web:/app
+      - /app/node_modules
+    depends_on:
+      - agent
+
+volumes:
+  dbdata:

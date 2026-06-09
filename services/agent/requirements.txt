@@ -1,0 +1,9 @@
+fastapi
+uvicorn[standard]
+claude-agent-sdk
+httpx
+pydantic>=2
+structlog
+opentelemetry-sdk
+opentelemetry-instrumentation-fastapi
+psycopg[binary]>=3.1
