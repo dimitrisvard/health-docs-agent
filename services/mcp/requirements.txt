@@ -3,4 +3,5 @@ fastembed
 psycopg[binary]>=3.1
 pgvector
 pydantic>=2
+pypdf
 structlog
